@@ -127,7 +127,7 @@ from proxy_manager import proxy_manager
 # ===== CONFIGURACIÓN DEL BOT =====
 API_ID = 9652234
 API_HASH = "e532d52554115eed48f82f7dcb10b171"
-BOT_TOKEN = "7640035042:AAEIvHIfFngcOFOTlRFWzru7AE3ecCpuPXA"
+BOT_TOKEN = "7640035042:AAHYO51QUhKFikvBqBgzoO9huxcxtXKrX0s"
 USUARIOS_AUTORIZADOS = ["Thedota9"]
 
 # Configuración por usuario
