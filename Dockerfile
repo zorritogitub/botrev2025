@@ -23,8 +23,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip wheel setuptools && \
     pip install --no-cache-dir -r requirements.txt
 
-# Instalar pymegatools desde GitHub si no está en requirements
-RUN pip install --no-cache-dir git+https://github.com/keepcosmos/pymegatools.git
 
 # ===== ETAPA 2: EJECUCIÓN =====
 FROM python:3.10-slim as runner
