@@ -426,7 +426,7 @@ async def test_proxy_cmd(client: Client, message: Message):
         return
         
     partes = message.text.split()
-    test_url = "https://httpbin.org/ip"
+    test_url = "https://rev16deabril.sld.cu/index.php/16_04/"
     
     if len(partes) >= 2:
         test_url = partes[1]
