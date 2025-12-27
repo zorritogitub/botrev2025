@@ -1,77 +1,33 @@
-# Dockerfile para Bot de Subida a Revistas
+# Usar una imagen base ligera de Python
+FROM python:3.11-slim
 
-# ===== ETAPA 1: CONSTRUCCIÓN =====
-FROM python:3.10-slim as builder
-
-# Instalar dependencias del sistema para compilación
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    wget \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Crear directorio de trabajo
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Crear entorno virtual
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Instalar dependencias del sistema necesarias
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
-# Instalar dependencias de Python
+# Copiar requirements primero para aprovechar cache de Docker
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip wheel setuptools && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
+# Copiar el resto de la aplicación
+COPY . .
 
-# ===== ETAPA 2: EJECUCIÓN =====
-FROM python:3.10-slim as runner
-
-# Instalar dependencias del sistema necesarias en runtime
-RUN apt-get update && apt-get install -y \
-    # Para descargas Mega
-    megatools \
-    # Para comprimir/descomprimir
-    zip \
-    unzip \
-    p7zip-full \
-    # Para YouTube-DL
-    ffmpeg \
-    # Utilidades del sistema
-    curl \
-    wget \
-    && rm -rf /var/lib/apt/lists/*
-
-# Crear usuario no root para seguridad
-RUN useradd -m -u 1000 botuser && \
-    mkdir -p /app && chown -R botuser:botuser /app
-
-# Copiar entorno virtual desde builder
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Establecer variables de entorno
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app \
-    TZ=UTC
-
-# Configurar directorio de trabajo
-WORKDIR /app
+# Crear un usuario no-root para mayor seguridad
+RUN useradd -m -u 1000 botuser && chown -R botuser:botuser /app
 USER botuser
 
-# Copiar archivos de la aplicación
-COPY --chown=botuser:botuser . .
+# Exponer el puerto que usará la aplicación
+# (ajusta según tu bot, comúnmente 8080, 3000, etc.)
+EXPOSE 8080
 
-# Crear directorios necesarios
-RUN mkdir -p downloads configs logs && \
-    chmod +x /app/*.py
-
-# Exponer puerto (Railway necesita esto aunque sea un bot)
-EXPOSE 10000
-
-# Script de inicio saludable para Railway
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:10000/health || exit 1
-
-# Comando para mantener el contenedor activo (Railway necesita un proceso persistente)
-CMD ["run.sh", "bash.sh"]
+# Comando para ejecutar el bot
+# AJUSTA ESTO según tu bot específico:
+# Para bots de Discord/Python: python bot.py
+# Para bots de Telegram: python main.py
+# Para bots web: gunicorn app:app --bind 0.0.0.0:8080
+CMD ["python", "bot.py"]
